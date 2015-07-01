@@ -22,13 +22,15 @@ void __multiplyMV(float* r, const float* lhs, const float* rhs)
 static
 void __multiplyMM(float* r, const float* lhs, const float* rhs)
 {
-    for (int i=0 ; i<4 ; i++) {
+	int i = 0;
+	int j = 1;
+    for ( i=0 ; i<4 ; i++) {
         register const float rhs_i0 = rhs[ I(i,0) ];
         register float ri0 = lhs[ I(0,0) ] * rhs_i0;
         register float ri1 = lhs[ I(0,1) ] * rhs_i0;
         register float ri2 = lhs[ I(0,2) ] * rhs_i0;
         register float ri3 = lhs[ I(0,3) ] * rhs_i0;
-        for (int j=1 ; j<4 ; j++) {
+        for (j=1 ; j<4 ; j++) {
             register const float rhs_ij = rhs[ I(i,j) ];
             ri0 += lhs[ I(j,0) ] * rhs_ij;
             ri1 += lhs[ I(j,1) ] * rhs_ij;
@@ -45,7 +47,8 @@ void __multiplyMM(float* r, const float* lhs, const float* rhs)
 static
 void floatcopy(float *src, int srcOffset, float *dest, int destOffset, int len)
 {
-	for (int i = 0; i < len ; i++)
+	int i;
+	for (i = 0; i < len ; i++)
 	{
 		dest[destOffset + i] = src[srcOffset + i];
 	}
@@ -121,7 +124,8 @@ void floatcopy(float *src, int srcOffset, float *dest, int destOffset, int len)
      * @param mOffset an offset into m where the input matrix is stored.
      */
 	void transposeM(float *mTrans, int mTransOffset, float *m, int mOffset) {
-		for (int i = 0; i < 4; i++) {
+		int i;
+		for (i = 0; i < 4; i++) {
 			int mBase = i * 4 + mOffset;
 			mTrans[i + mTransOffset] = m[mBase];
 			mTrans[i + 4 + mTransOffset] = m[mBase + 1];
@@ -448,10 +452,11 @@ void floatcopy(float *src, int srcOffset, float *dest, int destOffset, int len)
      * @param smOffset index into sm where the result matrix starts
      */
     void setIdentityM(float *sm, int smOffset) {
-        for (int i=0 ; i<16 ; i++) {
+		int i;
+        for (i=0 ; i<16 ; i++) {
             sm[smOffset + i] = 0;
         }
-        for(int i = 0; i < 16; i += 5) {
+        for(i = 0; i < 16; i += 5) {
             sm[smOffset + i] = 1.0f;
         }
     }	
@@ -473,7 +478,8 @@ void floatcopy(float *src, int srcOffset, float *dest, int destOffset, int len)
     void scaleM2(float *sm, int smOffset,
             float *m, int mOffset,
             float x, float y, float z) {
-        for (int i=0 ; i<4 ; i++) {
+		int i;
+        for (i=0 ; i<4 ; i++) {
             int smi = smOffset + i;
             int mi = mOffset + i;
             sm[     smi] = m[     mi] * x;
@@ -495,7 +501,8 @@ void floatcopy(float *src, int srcOffset, float *dest, int destOffset, int len)
      */
     void scaleM(float *m, int mOffset,
             float x, float y, float z) {
-        for (int i=0 ; i<4 ; i++) {
+		int i;
+        for (i=0 ; i<4 ; i++) {
             int mi = mOffset + i;
             m[     mi] *= x;
             m[ 4 + mi] *= y;
@@ -519,10 +526,11 @@ void floatcopy(float *src, int srcOffset, float *dest, int destOffset, int len)
     void translateM2(float *tm, int tmOffset,
             float *m, int mOffset,
             float x, float y, float z) {
-        for (int i=0 ; i<12 ; i++) {
+		int i;
+        for (i=0 ; i<12 ; i++) {
             tm[tmOffset + i] = m[mOffset + i];
         }
-        for (int i=0 ; i<4 ; i++) {
+        for (i=0 ; i<4 ; i++) {
             int tmi = tmOffset + i;
             int mi = mOffset + i;
             tm[12 + tmi] = m[mi] * x + m[4 + mi] * y + m[8 + mi] * z +
@@ -542,7 +550,8 @@ void floatcopy(float *src, int srcOffset, float *dest, int destOffset, int len)
     void translateM(
             float *m, int mOffset,
             float x, float y, float z) {
-        for (int i=0 ; i<4 ; i++) {
+		int i;
+        for (i=0 ; i<4 ; i++) {
             int mi = mOffset + i;
             m[12 + mi] += m[mi] * x + m[4 + mi] * y + m[8 + mi] * z;
         }
