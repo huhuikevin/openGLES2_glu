@@ -52,9 +52,11 @@ static double PI = 3.14159265358979323846;
 static void generateVertexData(float r){
     //顶点坐标数据的初始化================begin============================    	
 	const float UNIT_SIZE=0.5f;
+	float vAngle;
+	float hAngle;
 	//将球进行单位切分的角度
-	for(float vAngle=90;vAngle>-90;vAngle=vAngle-angleSpan){//垂直方向angleSpan度一份
-    	for(float hAngle=360;hAngle>0;hAngle=hAngle-angleSpan){//水平方向angleSpan度一份
+	for(vAngle=90;vAngle>-90;vAngle=vAngle-angleSpan){//垂直方向angleSpan度一份
+    	for(hAngle=360;hAngle>0;hAngle=hAngle-angleSpan){//水平方向angleSpan度一份
     		//纵向横向各到一个角度后计算对应的此点在球面上的坐标
     		double xozLength=r*UNIT_SIZE*cos(toRadians(vAngle));
     		float x1=(float)(xozLength*cos(toRadians(hAngle)));
@@ -91,8 +93,9 @@ static void generateTexCoor(){
 	float sizew=1.0f/bw;//列数
 	float sizeh=1.0f/bh;//行数
 	int c=0;
-	for(int i=0;i<bh;i++){
-		for(int j=0;j<bw;j++){
+	int i,j;
+	for(i=0;i<bh;i++){
+		for(j=0;j<bw;j++){
 			//每行列一个矩形，由两个三角形构成，共六个点，12个纹理坐标
 			float s=j*sizew;
 			float t=i*sizeh;
