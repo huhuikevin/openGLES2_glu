@@ -100,18 +100,22 @@ static void generateTexCoor(){
 			//每行列一个矩形，由两个三角形构成，共六个点，12个纹理坐标
 			float s=j*sizew;
 			float t=i*sizeh;
-			result[c++]=s;
-			result[c++]=t;
-			result[c++]=s;
-			result[c++]=t+sizeh;
-			result[c++]=s+sizew;
-			result[c++]=t;    			
-			result[c++]=s+sizew;
-			result[c++]=t;
-			result[c++]=s;
-			result[c++]=t+sizeh;
-			result[c++]=s+sizew;
-			result[c++]=t+sizeh;    			
+
+		#define loads(x) (result[c++]= 1.0 - (x))
+		#define loadt(x) (result[c++]= (x))
+			loads(s);
+			loadt(t);
+			loads(s);
+			loadt(t+sizeh);			
+			loads(s+sizew);			
+			loadt(t);
+			
+			loads(s+sizew);
+			loadt(t);
+			loads(s);
+			loadt(t+sizeh);
+			loads(s+sizew);			
+			loadt(t+sizeh);			 			
 		}
 	}    	
 }
