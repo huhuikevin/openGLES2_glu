@@ -28,7 +28,8 @@ static const char gFragmentShader[] = "#extension GL_OES_EGL_image_external: req
 	"}\n";
 
 static void checkGlError(const char* op) {
-    for (GLint error = glGetError(); error; error
+	GLint error;
+    for (error = glGetError(); error; error
             = glGetError()) {
         fprintf(stderr, "after %s() glError (0x%x)\n", op, error);
     }
@@ -194,8 +195,10 @@ static GLuint createProgram(const char* pVertexSource, const char* pFragmentSour
 int earthSetup(float r)
 {
 	int count = 0;
-    for(float vAngle=90;vAngle>-90;vAngle=vAngle-angleSpan){//垂直方向angleSpan度一份
-		for(float hAngle=360;hAngle>0;hAngle=hAngle-angleSpan){//水平方向angleSpan度一份
+	float vAngle;
+	float hAngle;
+    for(vAngle=90;vAngle>-90;vAngle=vAngle-angleSpan){//垂直方向angleSpan度一份
+		for(hAngle=360;hAngle>0;hAngle=hAngle-angleSpan){//水平方向angleSpan度一份
 			count++;
 		}
 	}
