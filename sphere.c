@@ -2,49 +2,42 @@
 #include <stdlib.h>
 #include <math.h>
 
-//圆柱着色器
-
-
 static float *pVertex; //存放顶点坐标的ArrayList
 static float *pTexture;
 static int VertexPointCnt;
 static int TexturePointCnt;
 static int vCount;
-static const float angleSpan=1.0f;
-static const float cyBlocks = 1.0f;
+static const float angleSpan=2.0f;
+
 static double PI = 3.14159265358979323846;
 #define toRadians(x) (((x)/180) * PI)
 #define addVertext(x) do {pVertex[VertexPointCnt++] = x; }while(0);
-static void generateVertexData(float length, float radius){
+static void generateVertexData(float r){
     //顶点坐标数据的初始化================begin============================    	
 	const float UNIT_SIZE=0.5f;
-	float blocks;
+	float vAngle;
 	float hAngle;
-	float len = length/cyBlocks;
 	//将球进行单位切分的角度
-	for(blocks=0;blocks<cyBlocks;blocks++){//垂直方向angleSpan度一份
+	for(vAngle=90;vAngle>-90;vAngle=vAngle-angleSpan){//垂直方向angleSpan度一份
     	for(hAngle=360;hAngle>0;hAngle=hAngle-angleSpan){//水平方向angleSpan度一份
-			//(right)左上角顶点坐标
-			float x1=(float) (radius*cosf(toRadians(hAngle)));
-			float y1=(length/2-blocks*len);
-			float z1=(float) (radius*sinf(toRadians(hAngle)));			
-
-			//(left)右上角顶点坐标
-			float x2=(float) (radius*cosf(toRadians(hAngle-angleSpan)));
-			float y2=y1;
-			float z2=(float) (radius*sinf(toRadians(hAngle-angleSpan)));
-
-			//(left)右下角顶点坐标
-			float x3=x2;
-			float y3= y1-len;
-			float z3=z2;
-
-			//(right)左下角顶点坐标
-			float x4=x1;
-			float y4=y3;
-			float z4=z1;
-			//fprintf(stderr, "x1=%f, y1=%f, z1=%f, x2=%f, y2=%f, z2=%f, x3=%f, y3=%f, z3=%f, x4=%f, y4=%f, z4=%f\n", x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4);
-    		//构建第一三角形    		
+    		//纵向横向各到一个角度后计算对应的此点在球面上的坐标
+    		double xozLength=r*UNIT_SIZE*cos(toRadians(vAngle));
+    		float x1=(float)(xozLength*cos(toRadians(hAngle)));
+    		float z1=(float)(xozLength*sin(toRadians(hAngle)));
+    		float y1=(float)(r*UNIT_SIZE*sin(toRadians(vAngle)));
+    		xozLength=r*UNIT_SIZE*cos(toRadians(vAngle-angleSpan));
+    		float x2=(float)(xozLength*cos(toRadians(hAngle)));
+    		float z2=(float)(xozLength*sin(toRadians(hAngle)));
+    		float y2=(float)(r*UNIT_SIZE*sin(toRadians(vAngle-angleSpan)));
+    		xozLength=r*UNIT_SIZE*cos(toRadians(vAngle-angleSpan));
+    		float x3=(float)(xozLength*cos(toRadians(hAngle-angleSpan)));
+    		float z3=(float)(xozLength*sin(toRadians(hAngle-angleSpan)));
+    		float y3=(float)(r*UNIT_SIZE*sin(toRadians(vAngle-angleSpan)));
+    		xozLength=r*UNIT_SIZE*cos(toRadians(vAngle));
+    		float x4=(float)(xozLength*cos(toRadians(hAngle-angleSpan)));
+    		float z4=(float)(xozLength*sin(toRadians(hAngle-angleSpan)));
+    		float y4=(float)(r*UNIT_SIZE*sin(toRadians(vAngle)));   
+    		//构建第一三角形
     		addVertext(x1);addVertext(y1);addVertext(z1);
     		addVertext(x2);addVertext(y2);addVertext(z2);
     		addVertext(x4);addVertext(y4);addVertext(z4);        		
@@ -52,14 +45,13 @@ static void generateVertexData(float length, float radius){
     		addVertext(x4);addVertext(y4);addVertext(z4);
     		addVertext(x2);addVertext(y2);addVertext(z2);
     		addVertext(x3);addVertext(y3);addVertext(z3); 
-    		 
         }
 	} 	
 }		
 //自动切分纹理产生纹理数组的方法
 static void generateTexCoor(){
 	int bw = (int)(360/angleSpan);
-	int bh = (int)(cyBlocks);
+	int bh = (int)(180/angleSpan);
 	float *result= pTexture;
 	float sizew=1.0f/bw;//列数
 	float sizeh=1.0f/bh;//行数
@@ -71,33 +63,32 @@ static void generateTexCoor(){
 			float s=j*sizew;
 			float t=i*sizeh;
 
-		#define loads(x) (result[c++]= 1-(x))
-		#define loadt(x) (result[c++]= 1-(x))
-			loads(s+sizew);			
-			loadt(t+sizeh);	
+		#define loads(x) (result[c++]= 1.0 - (x))
+		#define loadt(x) (result[c++]= (x))
+			loads(s);
+			loadt(t);
 			loads(s);
 			loadt(t+sizeh);			
-			loads(s);
-			loadt(t);
-
-			loads(s);
-			loadt(t);
 			loads(s+sizew);			
-			loadt(t+sizeh);				
+			loadt(t);
+			
+			loads(s+sizew);
+			loadt(t);
+			loads(s);
+			loadt(t+sizeh);
 			loads(s+sizew);			
-			loadt(t);			
-
-		 			
+			loadt(t+sizeh);			 			
 		}
 	}    	
 }
 
-
-//r --> 半径
-int cyliderSetup(float r, float lenght, float **ppVertex, float **ppTexture)
+int sphereSetup(float r, float **ppVertex, float **ppTexture)
 {
-	int count = (cyBlocks * ((int)(360/angleSpan)));
+	int count = 0;
+	int bw = (int)(360/angleSpan);
+	int bh = (int)(180/angleSpan);
 	
+	count = bw*bh;
 	VertexPointCnt = count * 18;
 	TexturePointCnt = count * 12;
 	pVertex = malloc(VertexPointCnt * sizeof(float));
@@ -111,14 +102,12 @@ int cyliderSetup(float r, float lenght, float **ppVertex, float **ppTexture)
 		
 		return -1;
 	}
-	
-	generateVertexData(lenght, r);
+	generateVertexData(r);
 	generateTexCoor();
 	
 	vCount = VertexPointCnt/3;
 	
 	*ppVertex = pVertex;
 	*ppTexture = pTexture;
-	
-	return vCount;	
+	return vCount;
 }
