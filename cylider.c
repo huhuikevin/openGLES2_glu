@@ -10,8 +10,8 @@ static float *pTexture;
 static int VertexPointCnt;
 static int TexturePointCnt;
 static int vCount;
-static const float angleSpan=1.0f;
-static const float cyBlocks = 1.0f;
+static const float angleSpan=2.0f;
+static const float cyBlocks = 5.0f;
 static double PI = 3.14159265358979323846;
 #define toRadians(x) (((x)/180) * PI)
 #define addVertext(x) do {pVertex[VertexPointCnt++] = x; }while(0);
@@ -25,14 +25,14 @@ static void generateVertexData(float length, float radius){
 	for(blocks=0;blocks<cyBlocks;blocks++){//垂直方向angleSpan度一份
     	for(hAngle=360;hAngle>0;hAngle=hAngle-angleSpan){//水平方向angleSpan度一份
 			//(right)左上角顶点坐标
-			float x1=(float) (radius*cosf(toRadians(hAngle)));
+			float z1=(float) (radius*cosf(toRadians(hAngle)));
 			float y1=(length/2-blocks*len);
-			float z1=(float) (radius*sinf(toRadians(hAngle)));			
+			float x1=(float) (radius*sinf(toRadians(hAngle)));			
 
 			//(left)右上角顶点坐标
-			float x2=(float) (radius*cosf(toRadians(hAngle-angleSpan)));
+			float z2=(float) (radius*cosf(toRadians(hAngle-angleSpan)));
 			float y2=y1;
-			float z2=(float) (radius*sinf(toRadians(hAngle-angleSpan)));
+			float x2=(float) (radius*sinf(toRadians(hAngle-angleSpan)));
 
 			//(left)右下角顶点坐标
 			float x3=x2;
@@ -71,23 +71,23 @@ static void generateTexCoor(){
 			float s=j*sizew;
 			float t=i*sizeh;
 
-		#define loads(x) (result[c++]= 1-(x))
-		#define loadt(x) (result[c++]= 1-(x))
+		#define loads(x) (result[c++]= (x))
+		#define loadt(x) (result[c++]= (x))
+		
+			loads(s);
+			loadt(t);	
 			loads(s+sizew);			
+			loadt(t);				
+			loads(s);
 			loadt(t+sizeh);	
+			
 			loads(s);
+			loadt(t+sizeh);		
+			loads(s+sizew);			
+			loadt(t);
+			loads(s+sizew);			
 			loadt(t+sizeh);			
-			loads(s);
-			loadt(t);
-
-			loads(s);
-			loadt(t);
-			loads(s+sizew);			
-			loadt(t+sizeh);				
-			loads(s+sizew);			
-			loadt(t);			
-
-		 			
+	 			
 		}
 	}    	
 }
