@@ -7,7 +7,7 @@
 #include <GLES2/gl2ext.h>
 #include "matrix.h"
 
-//地球着色器
+//圆柱着色器
 static const char gVertexShader[] = "uniform mat4 uMVPMatrix;\n" //总变换矩阵
 	"attribute vec3 aPosition;\n"  //顶点位置
 	"attribute vec2 aTexCoor;\n"    //顶点纹理坐标
@@ -45,37 +45,41 @@ static float *pTexture;
 static int VertexPointCnt;
 static int TexturePointCnt;
 static int vCount;
-static const float angleSpan=2.0f;
-
+static const float angleSpan=1.0f;
+static const float cyBlocks = 1.0f;
 static double PI = 3.14159265358979323846;
 #define toRadians(x) (((x)/180) * PI)
 #define addVertext(x) do {pVertex[VertexPointCnt++] = x; }while(0);
-static void generateVertexData(float r){
+static void generateVertexData(float length, float radius){
     //顶点坐标数据的初始化================begin============================    	
 	const float UNIT_SIZE=0.5f;
-	float vAngle;
+	float blocks;
 	float hAngle;
+	float len = length/cyBlocks;
 	//将球进行单位切分的角度
-	for(vAngle=90;vAngle>-90;vAngle=vAngle-angleSpan){//垂直方向angleSpan度一份
+	for(blocks=0;blocks<cyBlocks;blocks++){//垂直方向angleSpan度一份
     	for(hAngle=360;hAngle>0;hAngle=hAngle-angleSpan){//水平方向angleSpan度一份
-    		//纵向横向各到一个角度后计算对应的此点在球面上的坐标
-    		double xozLength=r*UNIT_SIZE*cos(toRadians(vAngle));
-    		float x1=(float)(xozLength*cos(toRadians(hAngle)));
-    		float z1=(float)(xozLength*sin(toRadians(hAngle)));
-    		float y1=(float)(r*UNIT_SIZE*sin(toRadians(vAngle)));
-    		xozLength=r*UNIT_SIZE*cos(toRadians(vAngle-angleSpan));
-    		float x2=(float)(xozLength*cos(toRadians(hAngle)));
-    		float z2=(float)(xozLength*sin(toRadians(hAngle)));
-    		float y2=(float)(r*UNIT_SIZE*sin(toRadians(vAngle-angleSpan)));
-    		xozLength=r*UNIT_SIZE*cos(toRadians(vAngle-angleSpan));
-    		float x3=(float)(xozLength*cos(toRadians(hAngle-angleSpan)));
-    		float z3=(float)(xozLength*sin(toRadians(hAngle-angleSpan)));
-    		float y3=(float)(r*UNIT_SIZE*sin(toRadians(vAngle-angleSpan)));
-    		xozLength=r*UNIT_SIZE*cos(toRadians(vAngle));
-    		float x4=(float)(xozLength*cos(toRadians(hAngle-angleSpan)));
-    		float z4=(float)(xozLength*sin(toRadians(hAngle-angleSpan)));
-    		float y4=(float)(r*UNIT_SIZE*sin(toRadians(vAngle)));   
-    		//构建第一三角形
+			//(right)左上角顶点坐标
+			float x1=(float) (radius*cosf(toRadians(hAngle)));
+			float y1=(length/2-blocks*len);
+			float z1=(float) (radius*sinf(toRadians(hAngle)));			
+
+			//(left)右上角顶点坐标
+			float x2=(float) (radius*cosf(toRadians(hAngle-angleSpan)));
+			float y2=y1;
+			float z2=(float) (radius*sinf(toRadians(hAngle-angleSpan)));
+
+			//(left)右下角顶点坐标
+			float x3=x2;
+			float y3= y1-len;
+			float z3=z2;
+
+			//(right)左下角顶点坐标
+			float x4=x1;
+			float y4=y3;
+			float z4=z1;
+			fprintf(stderr, "x1=%f, y1=%f, z1=%f, x2=%f, y2=%f, z2=%f, x3=%f, y3=%f, z3=%f, x4=%f, y4=%f, z4=%f\n", x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4);
+    		//构建第一三角形    		
     		addVertext(x1);addVertext(y1);addVertext(z1);
     		addVertext(x2);addVertext(y2);addVertext(z2);
     		addVertext(x4);addVertext(y4);addVertext(z4);        		
@@ -83,13 +87,14 @@ static void generateVertexData(float r){
     		addVertext(x4);addVertext(y4);addVertext(z4);
     		addVertext(x2);addVertext(y2);addVertext(z2);
     		addVertext(x3);addVertext(y3);addVertext(z3); 
+    		 
         }
 	} 	
 }		
 //自动切分纹理产生纹理数组的方法
 static void generateTexCoor(){
 	int bw = (int)(360/angleSpan);
-	int bh = (int)(180/angleSpan);
+	int bh = (int)(cyBlocks);
 	float *result= pTexture;
 	float sizew=1.0f/bw;//列数
 	float sizeh=1.0f/bh;//行数
@@ -101,21 +106,23 @@ static void generateTexCoor(){
 			float s=j*sizew;
 			float t=i*sizeh;
 
-		#define loads(x) (result[c++]= 1.0 - (x))
-		#define loadt(x) (result[c++]= (x))
-			loads(s);
-			loadt(t);
+		#define loads(x) (result[c++]= 1-(x))
+		#define loadt(x) (result[c++]= 1-(x))
+			loads(s+sizew);			
+			loadt(t+sizeh);	
 			loads(s);
 			loadt(t+sizeh);			
-			loads(s+sizew);			
-			loadt(t);
-			
-			loads(s+sizew);
-			loadt(t);
 			loads(s);
-			loadt(t+sizeh);
+			loadt(t);
+
+			loads(s);
+			loadt(t);
 			loads(s+sizew);			
-			loadt(t+sizeh);			 			
+			loadt(t+sizeh);				
+			loads(s+sizew);			
+			loadt(t);			
+
+		 			
 		}
 	}    	
 }
@@ -196,16 +203,10 @@ static GLuint createProgram(const char* pVertexSource, const char* pFragmentSour
 
 
 //r --> 半径
-int earthSetup(float r)
+int cyliderSetup(float lenght, float r)
 {
-	int count = 0;
-	float vAngle;
-	float hAngle;
-    for(vAngle=90;vAngle>-90;vAngle=vAngle-angleSpan){//垂直方向angleSpan度一份
-		for(hAngle=360;hAngle>0;hAngle=hAngle-angleSpan){//水平方向angleSpan度一份
-			count++;
-		}
-	}
+	int count = (cyBlocks * ((int)(360/angleSpan)));
+	
 	VertexPointCnt = count * 18;
 	TexturePointCnt = count * 12;
 	pVertex = malloc(VertexPointCnt * sizeof(float));
@@ -220,10 +221,11 @@ int earthSetup(float r)
 		return -1;
 	}
 	
-	generateVertexData(r);
+	generateVertexData(lenght, r);
 	generateTexCoor();
 	
 	vCount = VertexPointCnt/3;
+	fprintf(stderr, "vCount=%d\n", vCount);
 	mProgram = createProgram(gVertexShader, gFragmentShader);
 	//获取程序中顶点位置属性引用id  
     maPositionHandle = glGetAttribLocation(mProgram, "aPosition");
@@ -239,7 +241,7 @@ int earthSetup(float r)
 	return 0;
 }
 
-void earthDrawSelf(int texId) {        
+void cyliderDrawSelf(int texId) {        
     //制定使用某套着色器程序
     glUseProgram(mProgram);
     //将最终变换矩阵传入着色器程序
@@ -281,7 +283,7 @@ void earthDrawSelf(int texId) {
 	checkGlError("glDrawArrays");
 }
 
-void earthEnd()
+void cyliderEnd()
 {
 	if (pTexture)
 		free(pTexture);
