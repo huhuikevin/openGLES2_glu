@@ -10,8 +10,8 @@ static float *pTexture;
 static int VertexPointCnt;
 static int TexturePointCnt;
 static int vCount;
-static const float angleSpan=2.0f;
-static const float cyBlocks = 5.0f;
+static const float angleSpan=1.0f;
+static const float cyBlocks = 50.0f;
 static double PI = 3.14159265358979323846;
 #define toRadians(x) (((x)/180) * PI)
 #define addVertext(x) do {pVertex[VertexPointCnt++] = x; }while(0);
